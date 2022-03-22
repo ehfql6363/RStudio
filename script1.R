@@ -26,3 +26,6 @@ Academy <- data.frame(ID, university, college, absence, gpa, grade, stringsAsFac
 Academy[5, ]
 Grade_1 <- Academy[, c("college", "grade")]
 Academy[c(2, 4, 6), c("college", "gpa")]
+
+
+#441
