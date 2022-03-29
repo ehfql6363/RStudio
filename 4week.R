@@ -83,3 +83,39 @@ plot(sample1$AMT17, sample1$Y17_CNT,
      cex = 3,
      pch = 10,
      col = "red")
+
+
+library(descr)
+# 빈도분석 (범주형 변수)
+# table(), freq()
+# bar 차트
+freq(sample1$Gender)
+freq(sample1$Gender, plot = F) # barchart없애기
+
+# pie 차트
+#pie()
+pie(table(sample1$AREA), 
+    main = "지역분포",
+    labels = c("서울", "경기", "인천", "제주"),
+    col = c("red", "green", "blue", "black"))
+
+library(dplyr)
+#데이터 가공(전처리)
+# filter() 행추출
+# select() 열(변수) 추출
+# arrnge() 정렬
+# mutate() 변수 추가
+# summarise() 통계치 산출
+# group_by() 집단별로 나누기
+# left_join() 데이터 합치기(열)
+# bind_rows() 데이터 합치기(행)
+
+sample1$AMT <- sample1$AMT17 + sample1$AMT16
+
+sample1 %>% 
+  group_by(Gender) %>% 
+  summarise(Sum_AMT = sum(AMT),
+            MEAN_AMT = mean(AMT),
+            MIN_AMT = min(AMT),
+            MAX_AMT = max(AMT),
+            n = n())
