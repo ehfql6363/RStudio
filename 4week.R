@@ -6,7 +6,7 @@ install.packages('dplyr')
 library(readxl)
 library(psych)
 
-setwd("C:/Users/ehfql/Desktop/대학교/4학년-1/빅데이터 처리/강의 자료/4주차")
+setwd("C:/Users/Admin/Desktop/대학교/2022-1/빅데이터 처리/강의자료/4주차")
 sample1 <- read_excel("sample1.xlsx")
 
 summary(sample1)
@@ -94,7 +94,7 @@ boxplot(AMT17 ~ AREA, data = sample1)
 cor(sample1[, c(5:8)])
 
 # 상관관계 분석 - 그래프 (수치형)
-# plot(변수1, 변수2) - 기본
+# plot(변수1, 변수2) - 기본 (산점도)
 plot(sample1[,c(5:8)])
 plot(sample1$AMT17, sample1$Y17_CNT,
      main = "2017년 카드사용액과 사용건수",
@@ -110,7 +110,16 @@ library(descr)
 # 빈도분석 (범주형 변수)
 # table(), freq()
 # bar 차트
-freq(sample1$Gender)
+freq(sample1$Gender,
+     main = "성별 빈도와 상대도수",
+     xlab = "빈도수",
+     ylab = "상대도수",
+     col = c("pink", "skyblue"))
+freq(sample1$AREA,
+     main = "지역별 빈도와 상대도수",
+     xlab = "빈도수",
+     ylab = "상대도수",
+     col = c("green", "skyblue", "yellow", "orange"))
 freq(sample1$Gender, plot = F) # barchart없애기
 
 # pie 차트
@@ -119,6 +128,10 @@ pie(table(sample1$AREA),
     main = "지역분포",
     labels = c("서울", "경기", "인천", "제주"),
     col = c("red", "green", "blue", "black"))
+pie(table(sample1$Gender), 
+    main = "성별 분포",
+    labels = c("여", "남"),
+    col = c("pink", "skyblue"))
 
 library(dplyr)
 #데이터 가공(전처리)
