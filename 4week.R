@@ -18,7 +18,7 @@ hist(sample1$AGE, #히스토 그램 기본
      main = "연령대 분포",  # 히스토그램 제목
      xlab = "연령대", # x축 이름
      ylab = "빈도수", # y축 이름
-     col = "Yellow", # 색지정
+     col = "violet", # 색지정
      breaks = 8) # 구간개수
 
 quantile(sample1$AMT17) # 사분위수
@@ -34,7 +34,7 @@ outlier <- factor(c(1, 2, 3, 4, 5, 6, 7, 8, 80, 30), levels = c(1, 2, 3, 4, 5, 6
 boxplot(outlier)
 
 # 지역별 17년 16년 카드 사용건수, 사용금액
-describeBy(sample1[,c(5:8)], group = sample1$AREA)
+describeBy(sample1[,c(5:6)], group = sample1$AREA)
 
 # 성별 17년 16년 카드 사용건수, 사용금액
 describeBy(sample1[,c(5:8)], group = sample1$Gender)
@@ -48,25 +48,46 @@ par(mfrow = c(1, 1))
 hist(sample1$AMT17[sample1$Gender == "F"],
      main = "2017년 카드사용금액(여성)",
      xlab = "카드사용액",
-     ylab = "빈도수",
-     col = "Yellow")
+     ylab = "인구수",
+     col = "red")
 hist(sample1$AMT17[sample1$Gender == "M"],
      main = "2017년 카드사용금액(남성)",
      xlab = "카드사용액",
-     ylab = "빈도수",
-     col = "Green")
+     ylab = "인구수",
+     col = "blue")
+
+hist(sample1$AMT17[sample1$AREA == "서울"],
+     main = "2017년 카드사용금액(서울)",
+     xlab = "카드사용액",
+     ylab = "인구수",
+     col = "brown")
+hist(sample1$AMT17[sample1$AREA == "경기"],
+     main = "2017년 카드사용금액(경기)",
+     xlab = "카드사용액",
+     ylab = "인구수",
+     col = "violet")
 
 options(scipen = 999)
 
 #수치형 변수 (그룹별)
 # boxplot(data$수치형 ~ data$범주형) or boxplot(수치형 ~ 범주형, data = dataName)
-boxplot(sample1$AMT17 ~ sample1$Gender, 
+boxplot(AMT17 ~ Gender, data = sample1,
         ylim = c(0, 1500000),
         main = "성별에 따른 카드사용 BOX Plot",
         xlab = "성별",
         ylab = "2017카드사용금액",
         names = c("여성", "남성"),
-        col = c("yellow", "green"))
+        col = c("pink", "skyblue"))
+
+boxplot(AMT17 ~ AREA, data = sample1,
+        ylim = c(0, 1500000),
+        main = "지역별 카드사용 BOX Plot",
+        xlab = "지역",
+        ylab = "2017카드사용금액",
+        names = c("경기", "서울", "인천", "제주"),
+        col = c("green", "skyblue", "yellow", "orange"))
+
+boxplot(AMT17 ~ AREA, data = sample1)
 
 # 상관관계 분석 (수치형변수)
 # cor(변수1, 변수2, ...)
