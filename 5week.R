@@ -41,3 +41,22 @@ plotcp(iris_result)
 
 iris_prune <- prune(iris_result, cp=0.025) #cp를 기준으로 가지치기
 rpart.plot(iris_prune)
+
+#ctree ctree(formular, train_data, control)
+iris_ctree_result <- ctree(Species ~., data = iris_train, control = ctree_control(minsplit = 2))
+iris_ctree_result
+plot(iris_ctree_result, shape=3)
+
+#모형 평가
+#예측 값 생성 predict(analysis_object, newdata, type)
+expect <- predict(iris_prune, iris_test, type = "class")
+
+#실제 종속 변수
+actual <- iris_test$Species
+
+#데이터 셋 만들기
+iris_perfoemance <- data.frame(actual, expect)
+table(iris_perfoemance)
+
+#혼동 행렬을 이용하여 모형 평가하기 confusionMatrix(data, reference, mode)
+confusionMatrix(expect, actual, mode="everything")
