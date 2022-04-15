@@ -35,18 +35,26 @@ box_office$production_countries1
 #Revenue 변수 범주화
 describe(box_office$revenue)
 #Revenue의 평균을 기준
-box_office$revenue1 <- ifelse(box_office$revenue >= 67108787, "above AVG", "below AVG")
-box_office$revenue1 <- as.factor(box_office$revenue1)
-box_office$revenue1
-freq(box_office$revenue1)
+box_office$revenue <- ifelse(box_office$revenue >= 67108787, "above AVG", "below AVG")
+box_office$revenue <- as.factor(box_office$revenue)
+box_office$revenue
+freq(box_office$revenue)
+
+#runtime 변수 중위값 확인
+describe(box_office$runtime)
+#runtime 변수 범주화
+box_office$runtime <- ifelse(box_office$runtime >= 104, "long", "short")
+box_office$runtime <- as.factor(box_office$runtime)
+box_office$runtime
+freq(box_office$runtime)
 
 #Popularity 변수 범주화
 describe(box_office$popularity)
 #Popularity의 중앙값을 기준
-box_office$popularity1 <- ifelse(box_office$popularity >= 7.48, "above med", "below med")
-box_office$popularity1 <- as.factor(box_office$popularity1)
-box_office$popularity1
-freq(box_office$popularity1)
+box_office$popularity <- ifelse(box_office$popularity >= 7.48, "above med", "below med")
+box_office$popularity <- as.factor(box_office$popularity)
+box_office$popularity
+freq(box_office$popularity)
 #기준을 중앙값으로 잡는 이유
 #두 범주의 빈도수가 가장 비슷하기 때문
 
@@ -63,46 +71,48 @@ box_office$genres <- as.factor(box_office$genres)
 
 summary(box_office)
 #분석에 불필요한 변수(col)제거
-box_office <- box_office[, -c(2,3,4,6,7,9,10,11,13,14,15,17,18)]
-box_office <- box_office[,-c(5)]# <-최종 데이터
+box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
+box_office2 <- box_office2[,-c(5)]
+box_office <- box_office2
 
 set.seed(111)
+options(scipen = 999)
 
 #createDataPartition 8:2 (revenue1)
-box_idx_rev <- createDataPartition(box_office$revenue1, p = 0.8, list=FALSE)
+box_idx_rev <- createDataPartition(box_office$revenue, p = 0.8, list=FALSE)
 train_rev <- box_office[box_idx_rev, ]
 
 #createDataPartition 8:2 (popularity1)
-box_idx_pop <- createDataPartition(box_office$popularity1, p=0.75, list = FALSE)
+box_idx_pop <- createDataPartition(box_office$popularity, p=0.75, list = FALSE)
 train_pop <- box_office[box_idx_pop, ]
 
 #createDataPartition 8:2 (genres)
-box_idx_gen <- createDataPartition(box_office$genres, p = 0.75, list = FALSE)
+box_idx_gen <- createDataPartition(box_office$genres, p = 0.8, list = FALSE)
 train_gen <- box_office[box_idx_gen, ]
 
 #train : test = 8 : 2 (smaple())
 idx <- sample(2, nrow(box_office), replace = TRUE, prob=c(0.8, 0.2))
 
 trainBoxOffice <- box_office[idx==1,]
-table(trainBoxOffice$revenue1)
-table(trainBoxOffice$popularity1)
+table(trainBoxOffice$revenue)
+table(trainBoxOffice$popularity)
 
 testBoxOffice <- box_office[idx==2,]
-table(testBoxOffice$revenue1)
-table(testBoxOffice$popularity1)
+table(testBoxOffice$revenue)
+table(testBoxOffice$popularity)
 
 #모델링
-#1. rpart() - revenue1
-result_rpart_rev <- rpart(revenue1 ~., data = train_rev, control = rpart.control(minsplit = 2))
+#1. rpart() - revenue
+result_rpart_rev <- rpart(revenue ~., data = train_rev, control = rpart.control(minsplit = 2))
 result_rpart_rev
 rpart.plot(result_rpart_rev)
 
-#1. rpart() - popularity1
-result_rpart_pop <- rpart(popularity1 ~., data = train_pop, control = rpart.control(minsplit = 2))
+#1. rpart() - popularity
+result_rpart_pop <- rpart(popularity ~., data = train_pop, control = rpart.control(minsplit = 2))
 result_rpart_pop
 rpart.plot(result_rpart_pop)
 
 #1. raprt() - genres
-result_rpart_gen <- rpart(genres ~., data = train_gen, control = rpart.control(minsplit = 2))
-
-
+result_rpart_gen <- rpart(genres ~., data = train_gen, control = rpart.control(minsplit = 4))
+result_rpart_gen
+rpart.plot(result_rpart_gen)
