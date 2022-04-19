@@ -10,7 +10,7 @@ library(ggplot2)
 library(rpart.plot)
 
 
-setwd("C:/Users/Admin/Desktop/대학교/2022-1/빅데이터 처리/강의자료/6주차")
+setwd("C:/Users/ehfql/Desktop/대학교/4학년-1/빅데이터 처리/강의 자료/6주차")
 box_office_full <- read_excel("train_box_office.xlsx")
 head(box_office_full)
 tail(box_office_full)
@@ -116,3 +116,4 @@ rpart.plot(result_rpart_pop)
 result_rpart_gen <- rpart(genres ~., data = train_gen, control = rpart.control(minsplit = 4))
 result_rpart_gen
 rpart.plot(result_rpart_gen)
+]
