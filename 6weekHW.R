@@ -7,6 +7,8 @@ library(adabag)
 library(randomForest)
 library(caret)
 library(ggplot2)
+install.packages("party")
+library(party)
 library(rpart.plot)
 
 
@@ -38,8 +40,7 @@ options(scipen = 100)
 describe(box_office$revenue)
 summary(box_office$revenue)
 #Revenue의 평균을 기준
-box_office$revenue <- ifelse(box_office$revenue <= 2641874, "Low",
-                             ifelse(box_office$revenue >= 70953486, "High", "Mid"))
+box_office$revenue <- ifelse(box_office$revenue >= 67108787, "above AVG", "below AVG")
 box_office$revenue <- as.factor(box_office$revenue)
 box_office$revenue
 freq(box_office$revenue)
@@ -74,18 +75,25 @@ box_office$genres <- ifelse(box_office$genres == "Action",  "Action",
 box_office$genres <- as.factor(box_office$genres)
 
 summary(box_office)
+summary(box_office2)
 #분석에 불필요한 변수(col)제거
 box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
 box_office2 <- box_office2[,-c(5)]
+box_office_noGenre <- box_office[,-c(5)]
 box_office <- box_office2
 
 set.seed(111)
 options(scipen = 100)
 
-#createDataPartition 8:2 (revenue1)
+#createDataPartition 8:2 (revenue)
 box_idx_rev <- createDataPartition(box_office$revenue, p = 0.8, list=FALSE)
 train_rev <- box_office[box_idx_rev, ]
 test_rev <- box_office[-box_idx_rev, ]
+
+#noGenre
+noBox_idx_rev <- createDataPartition(box_office_noGenre$revenue, p = 0.8, list=FALSE)
+noTrain_rev <- box_office[noBox_idx_rev, ]
+noTest_rev <- box_office[-noBox_idx_rev, ]
 
 # #createDataPartition 8:2 (popularity1)
 # box_idx_pop <- createDataPartition(box_office$popularity, p=0.75, list = FALSE)
@@ -112,6 +120,11 @@ result_rpart_rev <- rpart(revenue ~., data = train_rev, control = rpart.control(
 result_rpart_rev
 rpart.plot(result_rpart_rev)
 
+#noGenre
+result_no_rpart_rev <- rpart(revenue ~., data = noTrain_rev, control = rpart.control(minsplit = 2))
+result_no_rpart_rev
+rpart.plot(result_no_rpart_rev)
+
 #1-1.가지치기 prune()
 result_rpart_rev$cptable
 
@@ -124,5 +137,29 @@ result_rpart_rev$cptable
 # result_rpart_gen <- rpart(genres ~., data = train_gen, control = rpart.control(minsplit = 4))
 # result_rpart_gen
 # rpart.plot(result_rpart_gen)
+
+#2. ctree() - revenue
+result_ctree_rev <- ctree(revenue ~., data = train_rev, control = ctree_control(minsplit = 2))
+result_ctree_rev
+plot(result_ctree_rev)
+#noGenre
+result_no_ctree_rev <- ctree(revenue ~., data = noTrain_rev, control = ctree_control(minsplit = 2))
+result_no_ctree_rev
+plot(result_no_ctree_rev)
+
+#3. randomForest()
+result_rf_rev <- randomForest(revenue ~., data = train_rev, ntree = 100)
+result_rf_rev
+plot(result_rf_rev)
+legend("topright", colnames(result_rf_rev$err.rate), cex = 0.8, fill = 1:3)
+#noGenre
+result_no_rf_rev <- randomForest(revenue ~., data = noTrain_rev, ntree = 100)
+result_no_rf_rev
+plot(result_no_rf_rev)
+legend("topright", colnames(result_no_rf_rev$err.rate), cex = 0.8, fill = 1:3)
+
+#변수의 중요도
+importance(result_rf_rev)
+varImpPlot(result_rf_rev)
 
 
