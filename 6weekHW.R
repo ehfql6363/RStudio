@@ -7,7 +7,6 @@ library(adabag)
 library(randomForest)
 library(caret)
 library(ggplot2)
-install.packages("party")
 library(party)
 library(rpart.plot)
 
@@ -34,17 +33,6 @@ freq(box_office$original_language)
 box_office$production_countries1 <- substr(box_office$production_countries, 18, 19)
 box_office$production_countries1
 
-options(scipen = 100)
-
-#Revenue 변수 범주화
-describe(box_office$revenue)
-summary(box_office$revenue)
-#Revenue의 평균을 기준
-box_office$revenue <- ifelse(box_office$revenue >= 67108787, "above AVG", "below AVG")
-box_office$revenue <- as.factor(box_office$revenue)
-box_office$revenue
-freq(box_office$revenue)
-
 # #runtime 변수 중위값 확인
 # describe(box_office$runtime)
 # #runtime 변수 범주화
@@ -68,14 +56,28 @@ box_office$genres <- as.factor(box_office$genres_desc)
 table(box_office$genres)
 #genres에는 소수의 장르가 있기 때문에 데이터 분석시
 #속도에 영향을 줄 수 있음 => Other라는 값으로 변경
+# Adventure, Horror, Crime은 빈도수가 비슷하여 AHC라는 이름으로 묶음
 box_office$genres <- ifelse(box_office$genres == "Action",  "Action",
                             ifelse(box_office$genres == "Drama", "Drama",
-                                   ifelse(box_office$genres == "Comedy", "Comedy", "Others")))
+                                   ifelse(box_office$genres == "Comedy", "Comedy", 
+                                          ifelse(box_office$genres == "Adventure", "AHC", 
+                                                 ifelse(box_office$genres == "Horror", "AHC",
+                                                        ifelse(box_office$genres == "Crime", "AHC", "Others"))))))
 #다시 범주화
 box_office$genres <- as.factor(box_office$genres)
 
+options(scipen = 100)
+
+#Revenue 변수 범주화
+describe(box_office$revenue)
+summary(box_office$revenue)
+#Revenue의 중위값을 기준
+box_office$revenue <- ifelse(box_office$revenue >= 17514663, "above Med", "below Med")
+box_office$revenue <- as.factor(box_office$revenue)
+box_office$revenue
+freq(box_office$revenue)
+
 summary(box_office)
-summary(box_office2)
 #분석에 불필요한 변수(col)제거
 box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
 box_office2 <- box_office2[,-c(5)]
@@ -89,7 +91,6 @@ options(scipen = 100)
 box_idx_rev <- createDataPartition(box_office$revenue, p = 0.8, list=FALSE)
 train_rev <- box_office[box_idx_rev, ]
 test_rev <- box_office[-box_idx_rev, ]
-
 #noGenre
 noBox_idx_rev <- createDataPartition(box_office_noGenre$revenue, p = 0.8, list=FALSE)
 noTrain_rev <- box_office[noBox_idx_rev, ]
@@ -119,7 +120,6 @@ table(testBoxOffice$popularity)
 result_rpart_rev <- rpart(revenue ~., data = train_rev, control = rpart.control(minsplit = 2))
 result_rpart_rev
 rpart.plot(result_rpart_rev)
-
 #noGenre
 result_no_rpart_rev <- rpart(revenue ~., data = noTrain_rev, control = rpart.control(minsplit = 2))
 result_no_rpart_rev
@@ -158,8 +158,42 @@ result_no_rf_rev
 plot(result_no_rf_rev)
 legend("topright", colnames(result_no_rf_rev$err.rate), cex = 0.8, fill = 1:3)
 
+#4. Bagging() - 굉장히 오래 걸림...
+result_bagging_rev <- bagging(revenue ~., data = train_rev, mfinal = 1)
+importance(result_bagging_rev)
+#bagging 도식화
+plot(result_bagging_rev$tree[[5]])
+text(result_bagging_rev$tree[[5]])
+
+#5. Boosting() - 이것도 오래 걸림...
+result_boosting_rev <- boosting(revenue ~., data = train_rev, mfinal = 1)
+
+
 #변수의 중요도
-importance(result_rf_rev)
+barchart(importance(result_rf_rev))
 varImpPlot(result_rf_rev)
+
+#모델 평가 - rpart()
+box_expect_rpart <- predict(result_rpart_rev, test_rev, type = "class")
+box_expect_rpart
+box_actual <- test_rev$revenue
+#혼동행렬 사용
+confusionMatrix(box_expect_rpart, box_actual, mode = "everything")
+
+#모델 평가 - ctree()
+box_expect_ctree <- predict(result_ctree_rev, test_rev, type = "response")
+box_expect_ctree
+confusionMatrix(box_expect_ctree, box_actual, mode = "everything")
+
+#
+
+#모델 평가 - randomForest()
+box_expect_rf <- predict(result_rf_rev, test_rev)
+confusionMatrix(box_expect_rf, box_actual, mode = "everything")
+
+
+#그래프 기능ggplot
+
+
 
 
