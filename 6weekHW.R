@@ -11,8 +11,9 @@ library(party)
 library(rpart.plot)
 
 
-setwd("C:/Users/ehfql/Desktop/대학교/4학년-1/빅데이터 처리/강의 자료/6주차")
+setwd("C:/Users/Admin/Desktop/대학교/2022-1/빅데이터 처리/강의자료/6주차")
 box_office_full <- read_excel("train_box_office.xlsx")
+#remove(box_office_full)
 head(box_office_full)
 tail(box_office_full)
 View(box_office_full)
@@ -22,7 +23,9 @@ colSums(is.na(box_office_full))
 
 #NA가 많은 변수(col) 제외 및 행(row) 제외, 식별자 제외
 box_office1 <- box_office_full[, -c(1,2,6,13,19,21)]
+#remove(box_office1)
 box_office <- na.omit(box_office1)
+box_office_null <- box_office1
 box_office
 
 #사용하지 않을 변수 찾기
@@ -32,28 +35,14 @@ freq(box_office$original_language)
 #text 구조화
 box_office$production_countries1 <- substr(box_office$production_countries, 18, 19)
 box_office$production_countries1
-
-# #runtime 변수 중위값 확인
-# describe(box_office$runtime)
-# #runtime 변수 범주화
-# box_office$runtime <- ifelse(box_office$runtime >= 104, "long", "short")
-# box_office$runtime <- as.factor(box_office$runtime)
-# box_office$runtime
-# freq(box_office$runtime)
-# 
-# #Popularity 변수 범주화
-# describe(box_office$popularity)
-# #Popularity의 중앙값을 기준
-# box_office$popularity <- ifelse(box_office$popularity >= 7.48, "above med", "below med")
-# box_office$popularity <- as.factor(box_office$popularity)
-# box_office$popularity
-# freq(box_office$popularity)
-# #기준을 중앙값으로 잡는 이유
-# #두 범주의 빈도수가 가장 비슷하기 때문
+#null이 있는 것
+box_office_null$production_countries1 <- substr(box_office_null$production_countries, 18, 19)
 
 #genres_desc 범주화
 box_office$genres <- as.factor(box_office$genres_desc)
 table(box_office$genres)
+#
+box_office_null$genres <- as.factor(box_office_null$genres_desc)
 #genres에는 소수의 장르가 있기 때문에 데이터 분석시
 #속도에 영향을 줄 수 있음 => Other라는 값으로 변경
 # Adventure, Horror, Crime은 빈도수가 비슷하여 AHC라는 이름으로 묶음
@@ -63,6 +52,7 @@ box_office$genres <- ifelse(box_office$genres == "Action",  "Action",
                                           ifelse(box_office$genres == "Adventure", "AHC", 
                                                  ifelse(box_office$genres == "Horror", "AHC",
                                                         ifelse(box_office$genres == "Crime", "AHC", "Others"))))))
+
 #다시 범주화
 box_office$genres <- as.factor(box_office$genres)
 
@@ -71,18 +61,19 @@ options(scipen = 100)
 #Revenue 변수 범주화
 describe(box_office$revenue)
 summary(box_office$revenue)
-#Revenue의 중위값을 기준
-box_office$revenue <- ifelse(box_office$revenue >= 17514663, "above Med", "below Med")
+#Revenue의 상위 25%값을 기준
+box_office$revenue <- ifelse(box_office$revenue >= 70953486, "above 3rd", "below 3rd")
 box_office$revenue <- as.factor(box_office$revenue)
 box_office$revenue
 freq(box_office$revenue)
 
 summary(box_office)
 #분석에 불필요한 변수(col)제거
-box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
+box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]
 box_office2 <- box_office2[,-c(5)]
-box_office_noGenre <- box_office[,-c(5)]
+#remove(box_office2)
 box_office <- box_office2
+box_office_bp <- box_office[,-c(3,5)]
 
 set.seed(111)
 options(scipen = 100)
@@ -91,18 +82,10 @@ options(scipen = 100)
 box_idx_rev <- createDataPartition(box_office$revenue, p = 0.8, list=FALSE)
 train_rev <- box_office[box_idx_rev, ]
 test_rev <- box_office[-box_idx_rev, ]
-#noGenre
-noBox_idx_rev <- createDataPartition(box_office_noGenre$revenue, p = 0.8, list=FALSE)
-noTrain_rev <- box_office[noBox_idx_rev, ]
-noTest_rev <- box_office[-noBox_idx_rev, ]
-
-# #createDataPartition 8:2 (popularity1)
-# box_idx_pop <- createDataPartition(box_office$popularity, p=0.75, list = FALSE)
-# train_pop <- box_office[box_idx_pop, ]
-# 
-# #createDataPartition 8:2 (genres)
-# box_idx_gen <- createDataPartition(box_office$genres, p = 0.8, list = FALSE)
-# train_gen <- box_office[box_idx_gen, ]
+#only budget, popularity
+bpBox_idx_rev <- createDataPartition(box_office_null$revenue, p = 0.8, list=FALSE)
+bpTrain_rev <- box_office[bpBox_idx_rev, ]
+bpTest_rev <- box_office[-bpBox_idx_rev, ]
 
 #train : test = 8 : 2 (smaple())
 idx <- sample(2, nrow(box_office), replace = TRUE, prob=c(0.8, 0.2))
@@ -120,7 +103,7 @@ table(testBoxOffice$popularity)
 result_rpart_rev <- rpart(revenue ~., data = train_rev, control = rpart.control(minsplit = 2))
 result_rpart_rev
 rpart.plot(result_rpart_rev)
-#noGenre
+#only budget, popularity
 result_no_rpart_rev <- rpart(revenue ~., data = noTrain_rev, control = rpart.control(minsplit = 2))
 result_no_rpart_rev
 rpart.plot(result_no_rpart_rev)
@@ -128,21 +111,11 @@ rpart.plot(result_no_rpart_rev)
 #1-1.가지치기 prune()
 result_rpart_rev$cptable
 
-# #1. rpart() - popularity
-# result_rpart_pop <- rpart(popularity ~., data = train_pop, control = rpart.control(minsplit = 2))
-# result_rpart_pop
-# rpart.plot(result_rpart_pop)
-# 
-# #1. raprt() - genres
-# result_rpart_gen <- rpart(genres ~., data = train_gen, control = rpart.control(minsplit = 4))
-# result_rpart_gen
-# rpart.plot(result_rpart_gen)
-
 #2. ctree() - revenue
 result_ctree_rev <- ctree(revenue ~., data = train_rev, control = ctree_control(minsplit = 2))
 result_ctree_rev
 plot(result_ctree_rev)
-#noGenre
+#only budget, popularity
 result_no_ctree_rev <- ctree(revenue ~., data = noTrain_rev, control = ctree_control(minsplit = 2))
 result_no_ctree_rev
 plot(result_no_ctree_rev)
@@ -151,16 +124,22 @@ plot(result_no_ctree_rev)
 result_rf_rev <- randomForest(revenue ~., data = train_rev, ntree = 100)
 result_rf_rev
 plot(result_rf_rev)
+importance(result_rf_rev)
 legend("topright", colnames(result_rf_rev$err.rate), cex = 0.8, fill = 1:3)
-#noGenre
+#only budget, popularity
 result_no_rf_rev <- randomForest(revenue ~., data = noTrain_rev, ntree = 100)
 result_no_rf_rev
 plot(result_no_rf_rev)
 legend("topright", colnames(result_no_rf_rev$err.rate), cex = 0.8, fill = 1:3)
 
+#변수 4개 중 중요도가 높은 두개(budget, popularity)로 bagging, boosting 모델링
+#해당 data의 이름 = box_office_bp
+
 #4. Bagging() - 굉장히 오래 걸림...
-result_bagging_rev <- bagging(revenue ~., data = train_rev, mfinal = 1)
+result_bagging_rev <- bagging(revenue ~., data = box_office, mfinal = 10)
 importance(result_bagging_rev)
+#only budget, popularity
+result_bagging_rev_bp <- bagging(revenue ~., data = bpTrain_rev, mfinal = 10)
 #bagging 도식화
 plot(result_bagging_rev$tree[[5]])
 text(result_bagging_rev$tree[[5]])
@@ -168,6 +147,8 @@ text(result_bagging_rev$tree[[5]])
 #5. Boosting() - 이것도 오래 걸림...
 result_boosting_rev <- boosting(revenue ~., data = train_rev, mfinal = 1)
 
+#only budget, popularity
+result_boosting_rev_bp <- boosting(revenue ~., data = bpTrain_rev, mfinal = 10)
 
 #변수의 중요도
 barchart(importance(result_rf_rev))
