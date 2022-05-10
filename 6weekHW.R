@@ -80,9 +80,8 @@ freq(box_office$revenue)
 summary(box_office)
 #분석에 불필요한 변수(col)제거
 box_office2 <- box_office[, -c(2,3,4,5,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
-box_office2 <- box_office2[,-c(5)]
+box_office <- box_office2[,-c(5)]
 box_office_noGenre <- box_office[,-c(5)]
-box_office <- box_office2
 
 set.seed(111)
 options(scipen = 100)
@@ -194,6 +193,8 @@ confusionMatrix(box_expect_rf, box_actual, mode = "everything")
 
 #그래프 기능ggplot
 
+memory.size()
+memory.limit(5000)
 
 
 
