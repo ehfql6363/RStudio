@@ -28,7 +28,11 @@ itemFrequencyPlot(groceries, support = 0.1) #item지지도의 시각화
 # 최소 지지도가 0.1이상인 것
 itemFrequencyPlot(groceries, topN = 20) #특정 개수만큼만 시각화, topN = 상위 몇개
 
-myrules <- apriori(data = groceries, parameter = list(support = 0.006, confidence = 0.25, minlen = 2))
+#myrules <- apriori(data = groceries, parameter = list(support = 0.006, confidence = 0.25, minlen = 2))
+#0.006 = 하루에 2번 이상 구매한 경우를 1달로 계산 (한달에 60번이상인 것)
+myrules <- apriori(data = groceries, parameter = list(support = 0.01, confidence = 0.25, minlen = 2))
+#지지도가 0.01과 0.006인것 과의 lift의 차이가 생김
+
 #data = 거래데이터를 가지고 있는 희소행렬
 #support = 요구되는 최소 지지도 60 / 9835 = 0.006
 #confidence = 요구되는 최소 신뢰도
@@ -38,16 +42,32 @@ inspect(myrules)
 inspect(myrules[1:3])
 inspect(sort(myrules, by="lift")[1:10])
 
+#berry 관련 연관듀칙만 보기
+berryrule <- subset(myrules, items %in% "berries")
+inspect(berryrule)
 
+#R데이터 프레임으로 규칙 저장
+groceryrule <- as(myrules, "data.frame")
+write.csv(groceryrule, file = "groceryrules.csv")
 
+#그래프로 표현
+plot(myrules, method="graph")
+#표현방식 바꾸기
+library(igraph)
+plot(myrules, method="graph", engine="igraph")
+#향상도(Lift)값이 높은 20개의 규칙만 그래프로 표현
+plot(sort(myrules, by="lift")[1:20], method="graph", engine="igraph")
+#특정 아이템을 선택하거나 룰을 선택하여 표현
+plot(myrules, method="graph", engine="htmlwidget")
+plot(sort(myrules, by="lift")[1:20], method="graph", engine="htmlwidget")
 
+plot(myrules, method="grouped", engine="grid")
+plot(myrules, method="grouped", interactive=TRUE)
 
-
-
-
-
-
-
+#메트릭스 형태
+#plot(myrules, method="grouped matrix") => 전체
+plot(myrules, method="grouped matrix")
+plot(sort(myrules, by="lift")[1:20], method="grouped matrix")
 
 
 
