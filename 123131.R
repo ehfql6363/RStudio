@@ -62,9 +62,8 @@ freq(box_office$revenue)
 summary(box_office)
 #분석에 불필요한 변수(col)제거
 box_office2 <- box_office[, -c(2,3,4,6,7,9,10,11,13,14,15,16,17)]# <-최종 데이터
-box_office2 <- box_office2[,-c(5)]
+box_office <- box_office2[,-c(2,5)]
 box_office_noGenre <- box_office[,-c(5)]
-box_office <- box_office2
 
 set.seed(111)
 options(scipen = 100)
@@ -81,6 +80,8 @@ noTest_rev <- box_office[-noBox_idx_rev, ]
 box2_idx_rev <- createDataPartition(box_office2$revenue, p=0.8, list = FALSE)
 train2_rev <- box_office[box2_idx_rev, ]
 test2_rev <- box_office[-box2_idx_rev, ]
+
+
 
 # #createDataPartition 8:2 (popularity1)
 # box_idx_pop <- createDataPartition(box_office$popularity, p=0.75, list = FALSE)

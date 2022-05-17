@@ -50,23 +50,38 @@ interest <- as.data.frame(lapply(data, scale))#행령 형태를 as.data.frame()�
 #모델링
 #클러스터 찾기
 set.seed(2345)
-mycluster <- kmeans(interest, 5)
+teen_cluster <- kmeans(interest, 5)
 mycluster
 
 #클러스터 검토
-mycluster$cluster #클러스터 ID
-myclusterID <- mycluster$cluster
-mycluster$centers #각 특징과 클러스터별 평균값 행렬
-mycluster$size #각 클러스터에 할당된 데이터
+teen_cluster$cluster #클러스터 ID
+tcluster <- teen_cluster$cluster
+teen_cluster$centers #각 특징과 클러스터별 평균값 행렬
+teen_cluster$size #각 클러스터에 할당된 데이터
+
+#teens 데이터 셋에 클러스터 ID 추가
+teens$cluster_id <- teen_cluster$cluster
+
+teens %>% group_by(cluster_id) %>%
+  summarise(age_mean = mean(age),
+            female_man = mean(female),
+            friend_mean = mean(friends))
 
 
+#통계적 기법으로 클러스터 K구하는 방법
+install.packages("factoextra")
+library(factoextra)#클러스터 개수 구하기
+library(rpart)
+data("iris")
 
+iris <- as.data.frame(iris)
+iris1 <- -iris[,c(1:4)]
 
-
-
-
-
-
+#elbo test
+#동질성 기준(wss)
+fviz_nbclust(iris1, kmeans, method = "wss")
+nc <- NbClust(iris1, min.nc = 2, max.nc = 15, method = "kmeans")
+barplot(table(nc$Best.n[1,]))
 
 
 
