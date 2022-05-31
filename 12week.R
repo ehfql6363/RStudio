@@ -199,6 +199,39 @@ graph_comment <- pair %>%
 
 graph_comment
 
+#단어 간 상관분석 - Phi coefficient
+word_cors <- comment_new %>%
+  add_count(word) %>%
+  filter(n >= 20) %>%
+  pairwise_cor(item = word,
+               feature = id,
+               sort = T)
+word_cors
+
+#파이 계수로 네트워크 그래프 만들기
+#1. 네트워크 그래프 데이터 만들기
+graph_cors <- word_cors %>%
+  filter(correlation >= 0.15) %>%
+  as_tbl_graph(directed = F) %>%
+  mutate(centrality = centrality_degree(),
+         group = as.factor(group_infomap()))
+
+#2. 네트워크 그래프 만들기
+ggraph(graph_cors, layout = "fr") + #레이아웃
+  geom_edge_link(color = "gray50", #edge 색
+                 aes(edge_alpha = correlation, #edge 명암
+                     edge_width = correlation), #edge 두께
+                 show.legend = F) + #범례 삭제
+  scale_edge_width(range = c(1,4)) + #edge 두께 범례례
+  geom_node_point(aes(size = centrality,
+                      color = group),
+                  show.legend = F)+
+  scale_size(range = c(5,10)) + 
+  geom_node_text(aes(label = name),
+                 repel = T,
+                 size = 5) +
+  theme_graph()
+
 
 
 
