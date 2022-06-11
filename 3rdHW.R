@@ -6,7 +6,6 @@ library(tidyverse)
 
 #연관성 분석
 
-
 setwd("C:/Users/Admin/Desktop/대학교/2022-1/빅데이터 처리/과제/3")
 
 market <- read.transactions("Market_Basket_Optimization.csv", sep=",")
