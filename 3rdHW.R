@@ -4,10 +4,11 @@ library(dplyr)
 library(tidyverse)
 
 
-#연관성 분석
+#연관성 분석#
 
 setwd("C:/Users/Admin/Desktop/대학교/2022-1/빅데이터 처리/과제/3")
 
+#희소 행렬 형태로 불러오기
 market <- read.transactions("Market_Basket_Optimization.csv", sep=",")
 summary(market)
 #행렬의 크기 892,619, 0이 아닌 셀의 비율(Density) = 0.03288973
@@ -43,7 +44,6 @@ inspect(sort(marketRule, by="confidence")[1:20])
 #시각화
 library(igraph)
 
-plot(marketRule, method = "graph", engine = )
 plot(sort(marketRule, by="confidence")[1:20], method="graph", engine="igraph")
 
 plot(marketRule, method="grouped", engine="grid")
@@ -51,7 +51,7 @@ plot(marketRule, method="grouped", interactive=TRUE)
 
 
 
-#군집 분석
+#군집 분석#
 library(stats)
 library(NbClust)
 library(cluster)
@@ -61,16 +61,21 @@ library(factoextra)#클러스터 개수 구하기
 library(rpart)
 
 USArrests <- data.frame(USArrests)
+str(USArrests)
 View(USArrests)
+summary(USArrests)
 arrests <- as.data.frame(lapply(USArrests,scale))
 
 #동질성 기준(wss)으로 클러스터의 수 결정
+options(scipen = 100)
 fviz_nbclust(USArrests, kmeans, method = "wss")
-#클러스터의 수 2으로 설정
+#클러스터의 수 4로 설정
 
+
+set.seed(111)
 #정한 클러스터 수로 클러스터링 수행
-set.seed(1234)
-uaCluster <- kmeans(arrests, 2)
+uaCluster <- kmeans(arrests[,c(1,2,4)], 4)
+uaCluster
 #검토
 uaCluster$cluster
 uaCluster$centers
@@ -79,13 +84,10 @@ uaCluster$size
 USArrests$clusterID <- uaCluster$cluster
 
 USArrests %>% group_by(clusterID) %>%
-  summarise(Murder_mean = mean(Murder),
-            Assault_man = mean(Assault),
-            UrbanPop_mean = mean(UrbanPop),
-            Rape_mean = mean(Rape))
+  summarise(UrbanPop_mean = mean(UrbanPop))
 
 
-#군집별 특성 정의 및 군집명 명명
+#군집 별 특성 정의 및 군집명 명명
 
 
 
